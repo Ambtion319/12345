@@ -1,0 +1,227 @@
+# ===========================================
+# UWorld Replica - Git Ignore Configuration
+# ===========================================
+
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+package-lock.json
+yarn.lock
+
+# Testing
+/coverage
+/test-results
+/playwright-report
+/playwright/.cache
+
+# Next.js
+/.next/
+/out/
+/build
+
+# Production
+/dist
+/build
+
+# Environment Variables (CRITICAL - Never commit these!)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+config.js
+config.local.js
+
+# Database
+/prisma/migrations
+*.db
+*.sqlite
+*.sqlite3
+
+# File Uploads
+/uploads
+/temp
+/public/uploads
+/public/temp
+
+# Logs
+/logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+.env.test
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Temporary folders
+tmp/
+temp/
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Vercel
+.vercel
+
+# Docker
+.dockerignore
+
+# Backup files
+*.backup
+*.bak
+*.tmp
+
+# Security
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# Prisma
+/prisma/migrations
+/prisma/dev.db
+
+# Redis dump
+dump.rdb
+
+# MongoDB
+/data/db
+
+# Docker volumes
+postgres_data/
+mongodb_data/
+redis_data/
+
+# SSL certificates
+/ssl
+*.pem
+*.crt
+*.key
+
+# Backup files
+/backups
+*.backup
+*.bak
+
+# Monitoring
+/sentry
+/monitoring
+
+# Local development
+/local
+/dev
+
+# Test files
+/test-uploads
+/test-data
+
+# Performance monitoring
+/clinic
+*.clinic
+
+# Memory dumps
+*.heapsnapshot
+
+# Coverage reports
+/coverage
+/.nyc_output
+
+# Storybook
+/storybook-static
+
+# Temporary files
+*.tmp
+*.temp

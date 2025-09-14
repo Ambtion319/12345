@@ -1,0 +1,81 @@
+Product Name: UWorld replica
+Prepared by: Bossx2
+Date: [14/9/2025]
+Version: 1.0
+1. Overview
+This platform enables students and professionals to practice exam-style questions in an environment modeled after UWORLD. Users can upload PDFs or Excel files containing question sets. The system applies OCR (if required), parses the content, and serves questions in a UWORLD-like interface with explanations and performance analytics. If explanations are missing, an LLM generates high-quality feedback aligned with exam standards.
+2. Goals & Objectives
+Provide a UWORLD-equivalent learning experience for uploaded/custom questions.
+Automate question ingestion from PDFs and Excel spreadsheets.
+Maintain content fidelity (questions, options, images, diagrams).
+Ensure accurate OCR parsing for scanned PDFs.
+Deliver immediate, structured feedback with fallback to LLM-based explanations.
+Provide analytics and tracking of student performance over time.
+3. Target Users
+Medical students preparing for exams (e.g., USMLE, PLAB, licensing exams).
+Educators who want to create private/custom question banks.
+Institutions offering adaptive learning resources.
+4. Key Features
+4.1 Question Ingestion
+File Upload: Accept PDF, Word, and Excel formats.
+OCR Engine: Extract text/images from scanned PDFs. (Tesseract or AWS Textract)
+Parser: Detects question, options, correct answer, and explanations.
+Validation: User can preview and correct parsing errors before final import.
+4.2 Question Interface (UWORLD Replica)
+Layout:
+Question text (rich text + images).
+Answer options (radio buttons).
+Navigation panel (Previous, Next, Flag, End Block).
+Features:
+Mark/flag questions.
+Time tracking (per question/block).
+Test modes: Tutor Mode, Timed Mode.
+Review Mode: Shows answers and explanations.
+Feedback Flow:
+If explanation available → display.
+If not available → query LLM (fine-tuned for medical/exam-style reasoning).
+4.3 Feedback Generation (LLM Integration)
+Primary Source: Provided feedback from file.
+Fallback Source: LLM-generated feedback, citing evidence-based references.
+Tone & Style: UWORLD-style detailed explanation with rationales for correct and incorrect answers.
+4.4 Analytics & Reporting
+Performance dashboards:
+% Correct by subject/system/topic.
+Time spent per question.
+Progress over time.
+Review of incorrect/flagged questions.
+4.5 Admin/Content Tools
+Bulk upload & manage questions.
+Manual edit of parsed questions/explanations.
+Ability to tag questions by subject, difficulty, system.
+5. Non-Functional Requirements
+5.1 Usability
+UWORLD-like interface for minimal learning curve.
+Mobile & desktop responsive design.
+5.2 Performance
+OCR processing < 2 minutes for a 200-question PDF.
+Low latency in serving questions (< 1s load time).
+5.3 Security
+User authentication (OAuth/JWT).
+Encryption of uploaded files.
+Compliance with data privacy regulations (GDPR, HIPAA if medical content).
+5.4 Scalability
+Cloud-native (AWS/GCP/Azure).
+Support for 100k+ concurrent users.
+6. System Architecture (High-Level)
+Frontend (React/Next.js)
+UWORLD-style UI.
+Test-taking, review, analytics dashboards.
+Backend (Node.js / Python FastAPI)
+File ingestion service.
+Question management system.
+LLM integration module.
+User performance tracking.
+OCR & Parsing
+Tesseract, AWS Textract, or Google Vision API.
+NLP parser to identify Q/A/Explanations.
+Database (PostgreSQL + Redis)
+Stores questions, answers, explanations, and analytics.
+LLM Integration
+OpenAI GPT-5 or fine-tuned model.
+Controlled prompt engineering for feedback consistency.

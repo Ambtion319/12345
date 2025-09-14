@@ -1,0 +1,249 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===========================================
+// User Management
+// ===========================================
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  image     String?
+  role      UserRole @default(STUDENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  questionBanks QuestionBank[]
+  userAnswers   UserAnswer[]
+  sessions      PracticeSession[]
+  analytics     Analytics[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  STUDENT
+  INSTRUCTOR
+  ADMIN
+}
+
+// ===========================================
+// Question Bank Management
+// ===========================================
+model QuestionBank {
+  id          String            @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  subject     String?
+  status      QuestionBankStatus @default(UPLOADING)
+  totalQuestions Int            @default(0)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  // File information
+  fileName    String?
+  fileSize    Int?
+  fileType    FileType?
+  fileUrl     String?
+
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questions Question[]
+  sessions  PracticeSession[]
+
+  @@map("question_banks")
+}
+
+enum QuestionBankStatus {
+  UPLOADING
+  PROCESSING
+  COMPLETED
+  ERROR
+}
+
+enum FileType {
+  PDF
+  DOCX
+  XLSX
+}
+
+// ===========================================
+// Question Management
+// ===========================================
+model Question {
+  id            String       @id @default(cuid())
+  questionBankId String
+  questionText  String
+  correctAnswer String
+  explanation   String?
+  subject       String?
+  system        String?
+  difficulty    Difficulty   @default(MEDIUM)
+  tags          String[]
+  images        String[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  // Relations
+  questionBank QuestionBank @relation(fields: [questionBankId], references: [id], onDelete: Cascade)
+  options      QuestionOption[]
+  userAnswers  UserAnswer[]
+
+  @@map("questions")
+}
+
+model QuestionOption {
+  id         String @id @default(cuid())
+  questionId String
+  letter     String
+  text       String
+
+  // Relations
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("question_options")
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+// ===========================================
+// Practice Sessions
+// ===========================================
+model PracticeSession {
+  id              String        @id @default(cuid())
+  userId          String
+  questionBankId  String
+  mode            PracticeMode
+  status          SessionStatus @default(ACTIVE)
+  totalQuestions  Int
+  completedQuestions Int        @default(0)
+  correctAnswers  Int           @default(0)
+  timeSpent       Int           @default(0) // in seconds
+  score           Float?        // percentage
+  startedAt       DateTime      @default(now())
+  completedAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionBank QuestionBank @relation(fields: [questionBankId], references: [id], onDelete: Cascade)
+  userAnswers  UserAnswer[]
+  analytics    Analytics[]
+
+  @@map("practice_sessions")
+}
+
+enum PracticeMode {
+  TUTOR
+  TIMED
+  REVIEW
+}
+
+enum SessionStatus {
+  ACTIVE
+  COMPLETED
+  PAUSED
+  CANCELLED
+}
+
+// ===========================================
+// User Answers
+// ===========================================
+model UserAnswer {
+  id           String   @id @default(cuid())
+  userId       String
+  questionId   String
+  sessionId    String
+  selectedOption String
+  isCorrect    Boolean
+  timeSpent    Int      // in seconds
+  isFlagged    Boolean  @default(false)
+  answeredAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  // Relations
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  session  PracticeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("user_answers")
+}
+
+// ===========================================
+// Analytics & Performance Tracking
+// ===========================================
+model Analytics {
+  id        String   @id @default(cuid())
+  userId    String
+  sessionId String?
+  type      AnalyticsType
+  data      Json     // Flexible JSON data for different analytics
+  createdAt DateTime @default(now())
+
+  // Relations
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session PracticeSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@map("analytics")
+}
+
+enum AnalyticsType {
+  PERFORMANCE
+  SUBJECT_BREAKDOWN
+  DIFFICULTY_ANALYSIS
+  TIME_ANALYSIS
+  PROGRESS_TRACKING
+}
+
+// ===========================================
+// System Configuration
+// ===========================================
+model SystemConfig {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+  type  ConfigType @default(STRING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("system_config")
+}
+
+enum ConfigType {
+  STRING
+  NUMBER
+  BOOLEAN
+  JSON
+}
+
+// ===========================================
+// Audit Logs
+// ===========================================
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  resource  String
+  details   Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@map("audit_logs")
+}

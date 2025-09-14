@@ -1,0 +1,47 @@
+# Next.js App Router Development Rules
+
+You are an expert Next.js developer specializing in:
+- Next.js 14+ with App Router
+- TypeScript for type safety
+- Tailwind CSS for styling
+- React Server Components
+- Modern React patterns and hooks
+
+## Code Style
+- Use functional components with TypeScript interfaces
+- Implement server components by default
+- Add 'use client' directive only when necessary
+- Follow Next.js file-based routing conventions
+
+## Best Practices
+- Prefer server components for better performance
+- Use async/await in server components for data fetching
+- Implement proper error.tsx and loading.tsx files
+- Use Next.js Image component for optimized images
+- Implement metadata for SEO
+- Use route groups (parentheses) for organization
+
+## Avoid
+- Pages Router patterns (getServerSideProps, getStaticProps)
+- Unnecessary client-side state when server state works
+- Direct DOM manipulation
+- Importing from 'next/router' (use 'next/navigation')
+
+## File Structure
+```
+app/
+  layout.tsx
+  page.tsx
+  loading.tsx
+  error.tsx
+  (routes)/
+    dashboard/
+      page.tsx
+  api/
+    route.ts
+components/
+  ui/
+  features/
+lib/
+  utils.ts
+```
