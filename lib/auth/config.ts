@@ -123,7 +123,6 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: '/login',
-    signUp: '/register',
     error: '/auth/error',
   },
   events: {
@@ -136,4 +135,4 @@ export const authOptions: NextAuthOptions = {
   },
   debug: config.app.env === 'development',
   secret: config.auth.nextAuth.secret,
-      }
+    }
