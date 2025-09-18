@@ -1,33 +1,11 @@
-// lib/auth/config.ts
-import { NextAuthOptions, User as NextAuthUser } from 'next-auth'
-import { AdapterUser } from 'next-auth/adapters'
+import { NextAuthOptions } from 'next-auth'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import GoogleProvider from 'next-auth/providers/google'
 import GitHubProvider from 'next-auth/providers/github'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from '@/lib/database/connection'
 import bcrypt from 'bcryptjs'
-
-const config = {
-  app: {
-    env: process.env.NODE_ENV || 'development',
-  },
-  auth: {
-    nextAuth: {
-      secret: process.env.NEXTAUTH_SECRET || 'your-nextauth-secret',
-    },
-  },
-  oauth: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID || '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-    },
-    github: {
-      clientId: process.env.GITHUB_CLIENT_ID || '',
-      clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
-    },
-  },
-}
+import config from '../../config.js' // استخدم ملف config.js اللي جهزته
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -44,33 +22,41 @@ export const authOptions: NextAuthOptions = {
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
+        password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null
+        if (!credentials?.email || !credentials?.password) {
+          return null
+        }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        })
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email }
+          })
 
-        if (!user || !(user as { password?: string }).password) return null
+          if (!user) return null
 
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password!
-        )
+          // OAuth users ممكن مايكونش عندهم password
+          if (!('password' in user) || !user.password) {
+            return null
+          }
 
-        if (!isPasswordValid) return null
+          const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
+          if (!isPasswordValid) return null
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
-          role: user.role,
-        } as AdapterUser & { role: string }
-      },
-    }),
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            role: user.role || 'STUDENT',
+          }
+        } catch (error) {
+          console.error('Auth error:', error)
+          return null
+        }
+      }
+    })
   ],
   session: {
     strategy: 'jwt',
@@ -85,16 +71,16 @@ export const authOptions: NextAuthOptions = {
         token.accessToken = account.access_token
         token.provider = account.provider
       }
+
       if (user) {
-        // type assertion
-        const u = user as AdapterUser & { role: string }
-        token.role = u.role
-        token.id = u.id
+        token.role = 'role' in user ? user.role : 'STUDENT'
+        token.id = user.id
       }
+
       return token
     },
     async session({ session, token }) {
-      if (token) {
+      if (token && session.user) {
         session.user.id = token.id as string
         session.user.role = token.role as string
         session.accessToken = token.accessToken as string
@@ -102,10 +88,10 @@ export const authOptions: NextAuthOptions = {
       }
       return session
     },
-    async signIn({ user }) {
+    async signIn({ user, account }) {
       try {
         const existingUser = await prisma.user.findUnique({
-          where: { email: user.email! },
+          where: { email: user.email! }
         })
 
         if (!existingUser) {
@@ -115,7 +101,7 @@ export const authOptions: NextAuthOptions = {
               name: user.name,
               image: user.image,
               role: 'STUDENT',
-            },
+            }
           })
         }
 
@@ -131,6 +117,14 @@ export const authOptions: NextAuthOptions = {
     signUp: '/register',
     error: '/auth/error',
   },
+  events: {
+    async signIn({ user, account }) {
+      console.log(`User ${user.email} signed in via ${account?.provider}`)
+    },
+    async signOut({ session }) {
+      console.log(`User ${session?.user?.email} signed out`)
+    },
+  },
   debug: config.app.env === 'development',
   secret: config.auth.nextAuth.secret,
-        }
+      }
