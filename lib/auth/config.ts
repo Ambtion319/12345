@@ -1,5 +1,6 @@
 // lib/auth/config.ts
-import { NextAuthOptions } from 'next-auth'
+import { NextAuthOptions, User as NextAuthUser } from 'next-auth'
+import { AdapterUser } from 'next-auth/adapters'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import GoogleProvider from 'next-auth/providers/google'
 import GitHubProvider from 'next-auth/providers/github'
@@ -7,7 +8,6 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from '@/lib/database/connection'
 import bcrypt from 'bcryptjs'
 
-// استخدم config.js أو .env
 const config = {
   app: {
     env: process.env.NODE_ENV || 'development',
@@ -68,13 +68,13 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           image: user.image,
           role: user.role,
-        }
+        } as AdapterUser & { role: string }
       },
     }),
   ],
   session: {
     strategy: 'jwt',
-    maxAge: 7 * 24 * 60 * 60, // 7 أيام
+    maxAge: 7 * 24 * 60 * 60,
   },
   jwt: {
     maxAge: 7 * 24 * 60 * 60,
@@ -86,8 +86,10 @@ export const authOptions: NextAuthOptions = {
         token.provider = account.provider
       }
       if (user) {
-        token.role = user.role
-        token.id = user.id
+        // type assertion
+        const u = user as AdapterUser & { role: string }
+        token.role = u.role
+        token.id = u.id
       }
       return token
     },
