@@ -5,7 +5,7 @@ import GitHubProvider from 'next-auth/providers/github'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from '@/lib/database/connection'
 import bcrypt from 'bcryptjs'
-import config from '../../config.js' // استخدم ملف config.js اللي جهزته
+import config from '../../config.js'
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -81,10 +81,19 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.id as string
-        session.user.role = token.role as string
-        session.accessToken = token.accessToken as string
-        session.provider = token.provider as string
+        // إنشاء كائن مستخدم موسع مع الخصائص الإضافية
+        const extendedUser = {
+          ...session.user,
+          id: token.id as string,
+          role: token.role as string,
+        };
+
+        return {
+          ...session,
+          user: extendedUser,
+          accessToken: token.accessToken as string,
+          provider: token.provider as string,
+        };
       }
       return session
     },
