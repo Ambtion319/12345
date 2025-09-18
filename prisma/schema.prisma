@@ -1,5 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// schema.prisma
 
 generator client {
   provider = "prisma-client-js"
@@ -16,6 +15,7 @@ datasource db {
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
+  password  String?  // ← لإمكانية تسجيل الدخول بـ email/password
   name      String?
   image     String?
   role      UserRole @default(STUDENT)
@@ -138,7 +138,7 @@ model PracticeSession {
   startedAt       DateTime      @default(now())
   completedAt     DateTime?
   createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  updatedAt       DateTime      @default(updatedAt)
 
   // Relations
   user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
