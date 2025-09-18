@@ -127,8 +127,8 @@ export const checkDatabaseHealth = async () => {
   }
 
   try {
-    // Check MongoDB
-    if (mongoConnection) {
+    // Check MongoDB - التحقق من وجود الاتصال وقاعدة البيانات أولاً
+    if (mongoConnection && mongoose.connection.db) {
       await mongoose.connection.db.admin().ping()
       health.mongodb = true
     }
@@ -221,8 +221,8 @@ export const clearTestData = async () => {
     await prisma.user.deleteMany()
     await prisma.systemConfig.deleteMany()
 
-    // Clear MongoDB test data
-    if (mongoConnection) {
+    // Clear MongoDB test data - التحقق من وجود قاعدة البيانات أولاً
+    if (mongoConnection && mongoose.connection.db) {
       const collections = await mongoose.connection.db.listCollections().toArray()
       for (const collection of collections) {
         await mongoose.connection.db.collection(collection.name).deleteMany({})
@@ -246,4 +246,4 @@ export default {
   gracefulShutdown,
   initializeDatabases,
   clearTestData,
-}
+                           }
