@@ -3,7 +3,7 @@ import mongoose, { Schema, Document } from 'mongoose'
 // ===========================================
 // File Upload Management
 // ===========================================
-export interface IFileUpload extends Document {
+export interface ILLMResponse extends Omit<Document, 'model'> {
   _id: string
   userId: string
   fileName: string
