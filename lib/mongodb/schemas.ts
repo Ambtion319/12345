@@ -3,7 +3,7 @@ import mongoose, { Schema, Document } from 'mongoose'
 // ===========================================
 // File Upload Management
 // ===========================================
-export interface ILLMResponse extends Omit<Document, 'model'> {
+export interface IFileUpload extends Document {
   _id: string
   userId: string
   fileName: string
@@ -96,21 +96,26 @@ const OCRResultSchema = new Schema<IOCRResult>({
 // ===========================================
 // LLM Responses & Caching
 // ===========================================
-export interface ILLMResponse extends Document {
-  _id: string
-  questionId: string
-  prompt: string
-  response: string
-  model: string
-  tokensUsed: number
-  cost: number
-  processingTime: number
-  cached: boolean
-  expiresAt?: Date
-  createdAt: Date
+// الحل: فصل الواجهة الأساسية عن واجهة المستند
+export interface ILLMResponse {
+  questionId: string;
+  prompt: string;
+  response: string;
+  model: string;
+  tokensUsed: number;
+  cost: number;
+  processingTime: number;
+  cached: boolean;
+  expiresAt?: Date;
 }
 
-const LLMResponseSchema = new Schema<ILLMResponse>({
+export interface ILLMResponseDocument extends ILLMResponse, Document {
+  _id: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const LLMResponseSchema = new Schema<ILLMResponseDocument>({
   questionId: { type: String, required: true, index: true },
   prompt: { type: String, required: true },
   response: { type: String, required: true },
@@ -256,7 +261,7 @@ const UserSessionSchema = new Schema<IUserSession>({
 // ===========================================
 export const FileUpload = mongoose.models.FileUpload || mongoose.model<IFileUpload>('FileUpload', FileUploadSchema)
 export const OCRResult = mongoose.models.OCRResult || mongoose.model<IOCRResult>('OCRResult', OCRResultSchema)
-export const LLMResponse = mongoose.models.LLMResponse || mongoose.model<ILLMResponse>('LLMResponse', LLMResponseSchema)
+export const LLMResponse = mongoose.models.LLMResponse || mongoose.model<ILLMResponseDocument>('LLMResponse', LLMResponseSchema)
 export const SystemLog = mongoose.models.SystemLog || mongoose.model<ISystemLog>('SystemLog', SystemLogSchema)
 export const CachedData = mongoose.models.CachedData || mongoose.model<ICachedData>('CachedData', CachedDataSchema)
 export const BackgroundJob = mongoose.models.BackgroundJob || mongoose.model<IBackgroundJob>('BackgroundJob', BackgroundJobSchema)
