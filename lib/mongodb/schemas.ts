@@ -3,8 +3,7 @@ import mongoose, { Schema, Document } from 'mongoose'
 // ===========================================
 // File Upload Management
 // ===========================================
-export interface IFileUpload extends Document {
-  _id: string
+export interface IFileUpload {
   userId: string
   fileName: string
   originalName: string
@@ -22,11 +21,15 @@ export interface IFileUpload extends Document {
     ocrProcessed?: boolean
     questionsExtracted?: number
   }
+}
+
+export interface IFileUploadDocument extends IFileUpload, Document {
+  _id: mongoose.Types.ObjectId
   createdAt: Date
   updatedAt: Date
 }
 
-const FileUploadSchema = new Schema<IFileUpload>({
+const FileUploadSchema = new Schema<IFileUploadDocument>({
   userId: { type: String, required: true, index: true },
   fileName: { type: String, required: true },
   originalName: { type: String, required: true },
@@ -48,16 +51,12 @@ const FileUploadSchema = new Schema<IFileUpload>({
     ocrProcessed: { type: Boolean, default: false },
     questionsExtracted: { type: Number, default: 0 }
   }
-}, {
-  timestamps: true,
-  collection: 'file_uploads'
-})
+}, { timestamps: true, collection: 'file_uploads' })
 
 // ===========================================
 // OCR Results
 // ===========================================
-export interface IOCRResult extends Document {
-  _id: string
+export interface IOCRResult {
   fileUploadId: string
   pageNumber: number
   extractedText: string
@@ -71,10 +70,15 @@ export interface IOCRResult extends Document {
     confidence: number
   }>
   processingTime: number
-  createdAt: Date
 }
 
-const OCRResultSchema = new Schema<IOCRResult>({
+export interface IOCRResultDocument extends IOCRResult, Document {
+  _id: mongoose.Types.ObjectId
+  createdAt: Date
+  updatedAt: Date
+}
+
+const OCRResultSchema = new Schema<IOCRResultDocument>({
   fileUploadId: { type: String, required: true, index: true },
   pageNumber: { type: Number, required: true },
   extractedText: { type: String, required: true },
@@ -87,32 +91,29 @@ const OCRResultSchema = new Schema<IOCRResult>({
     height: { type: Number, required: true },
     confidence: { type: Number, required: true }
   }],
-  processingTime: { type: Number, required: true }, // in milliseconds
-}, {
-  timestamps: true,
-  collection: 'ocr_results'
-})
+  processingTime: { type: Number, required: true },
+}, { timestamps: true, collection: 'ocr_results' })
 
 // ===========================================
 // LLM Responses & Caching
 // ===========================================
-// الحل: فصل الواجهة الأساسية عن واجهة المستند
 export interface ILLMResponse {
-  questionId: string;
-  prompt: string;
-  response: string;
-  model: string;
-  tokensUsed: number;
-  cost: number;
-  processingTime: number;
-  cached: boolean;
-  expiresAt?: Date;
+  questionId: string
+  prompt: string
+  response: string
+  model: string
+  tokensUsed: number
+  cost: number
+  processingTime: number
+  cached: boolean
+  expiresAt?: Date
 }
 
-export interface ILLMResponseDocument extends ILLMResponse, Document {
-  _id: mongoose.Types.ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
+export interface ILLMResponseDocument extends Omit<ILLMResponse, "model">, Document {
+  _id: mongoose.Types.ObjectId
+  model: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 const LLMResponseSchema = new Schema<ILLMResponseDocument>({
@@ -125,16 +126,12 @@ const LLMResponseSchema = new Schema<ILLMResponseDocument>({
   processingTime: { type: Number, required: true },
   cached: { type: Boolean, default: false },
   expiresAt: { type: Date, index: { expireAfterSeconds: 0 } }
-}, {
-  timestamps: true,
-  collection: 'llm_responses'
-})
+}, { timestamps: true, collection: 'llm_responses' })
 
 // ===========================================
 // System Logs
 // ===========================================
-export interface ISystemLog extends Document {
-  _id: string
+export interface ISystemLog {
   level: 'error' | 'warn' | 'info' | 'debug'
   message: string
   service: string
@@ -142,58 +139,51 @@ export interface ISystemLog extends Document {
   sessionId?: string
   metadata: Record<string, any>
   stack?: string
-  createdAt: Date
 }
 
-const SystemLogSchema = new Schema<ISystemLog>({
-  level: { 
-    type: String, 
-    enum: ['error', 'warn', 'info', 'debug'],
-    required: true,
-    index: true
-  },
+export interface ISystemLogDocument extends ISystemLog, Document {
+  _id: mongoose.Types.ObjectId
+  createdAt: Date
+  updatedAt: Date
+}
+
+const SystemLogSchema = new Schema<ISystemLogDocument>({
+  level: { type: String, enum: ['error', 'warn', 'info', 'debug'], required: true, index: true },
   message: { type: String, required: true },
   service: { type: String, required: true, index: true },
   userId: { type: String, index: true },
   sessionId: { type: String, index: true },
   metadata: { type: Schema.Types.Mixed, default: {} },
   stack: { type: String }
-}, {
-  timestamps: true,
-  collection: 'system_logs'
-})
+}, { timestamps: true, collection: 'system_logs' })
 
 // ===========================================
 // Cached Data
 // ===========================================
-export interface ICachedData extends Document {
-  _id: string
+export interface ICachedData {
   key: string
   value: any
-  ttl: number // time to live in seconds
+  ttl: number
   expiresAt: Date
-  createdAt: Date
 }
 
-const CachedDataSchema = new Schema<ICachedData>({
+export interface ICachedDataDocument extends ICachedData, Document {
+  _id: mongoose.Types.ObjectId
+  createdAt: Date
+  updatedAt: Date
+}
+
+const CachedDataSchema = new Schema<ICachedDataDocument>({
   key: { type: String, required: true, unique: true, index: true },
   value: { type: Schema.Types.Mixed, required: true },
   ttl: { type: Number, required: true },
-  expiresAt: { 
-    type: Date, 
-    required: true,
-    index: { expireAfterSeconds: 0 }
-  }
-}, {
-  timestamps: true,
-  collection: 'cached_data'
-})
+  expiresAt: { type: Date, required: true, index: { expireAfterSeconds: 0 } }
+}, { timestamps: true, collection: 'cached_data' })
 
 // ===========================================
 // Background Jobs
 // ===========================================
-export interface IBackgroundJob extends Document {
-  _id: string
+export interface IBackgroundJob {
   type: string
   status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled'
   priority: number
@@ -205,17 +195,17 @@ export interface IBackgroundJob extends Document {
   scheduledAt: Date
   startedAt?: Date
   completedAt?: Date
-  createdAt: Date
 }
 
-const BackgroundJobSchema = new Schema<IBackgroundJob>({
+export interface IBackgroundJobDocument extends IBackgroundJob, Document {
+  _id: mongoose.Types.ObjectId
+  createdAt: Date
+  updatedAt: Date
+}
+
+const BackgroundJobSchema = new Schema<IBackgroundJobDocument>({
   type: { type: String, required: true, index: true },
-  status: { 
-    type: String, 
-    enum: ['pending', 'processing', 'completed', 'failed', 'cancelled'],
-    default: 'pending',
-    index: true
-  },
+  status: { type: String, enum: ['pending', 'processing', 'completed', 'failed', 'cancelled'], default: 'pending', index: true },
   priority: { type: Number, default: 0 },
   data: { type: Schema.Types.Mixed, required: true },
   result: { type: Schema.Types.Mixed },
@@ -225,44 +215,38 @@ const BackgroundJobSchema = new Schema<IBackgroundJob>({
   scheduledAt: { type: Date, default: Date.now, index: true },
   startedAt: { type: Date },
   completedAt: { type: Date }
-}, {
-  timestamps: true,
-  collection: 'background_jobs'
-})
+}, { timestamps: true, collection: 'background_jobs' })
 
 // ===========================================
-// User Sessions (Redis alternative)
+// User Sessions
 // ===========================================
-export interface IUserSession extends Document {
-  _id: string
+export interface IUserSession {
   userId: string
   sessionToken: string
   data: Record<string, any>
   expiresAt: Date
-  createdAt: Date
 }
 
-const UserSessionSchema = new Schema<IUserSession>({
+export interface IUserSessionDocument extends IUserSession, Document {
+  _id: mongoose.Types.ObjectId
+  createdAt: Date
+  updatedAt: Date
+}
+
+const UserSessionSchema = new Schema<IUserSessionDocument>({
   userId: { type: String, required: true, index: true },
   sessionToken: { type: String, required: true, unique: true, index: true },
   data: { type: Schema.Types.Mixed, default: {} },
-  expiresAt: { 
-    type: Date, 
-    required: true,
-    index: { expireAfterSeconds: 0 }
-  }
-}, {
-  timestamps: true,
-  collection: 'user_sessions'
-})
+  expiresAt: { type: Date, required: true, index: { expireAfterSeconds: 0 } }
+}, { timestamps: true, collection: 'user_sessions' })
 
 // ===========================================
 // Export Models
 // ===========================================
-export const FileUpload = mongoose.models.FileUpload || mongoose.model<IFileUpload>('FileUpload', FileUploadSchema)
-export const OCRResult = mongoose.models.OCRResult || mongoose.model<IOCRResult>('OCRResult', OCRResultSchema)
+export const FileUpload = mongoose.models.FileUpload || mongoose.model<IFileUploadDocument>('FileUpload', FileUploadSchema)
+export const OCRResult = mongoose.models.OCRResult || mongoose.model<IOCRResultDocument>('OCRResult', OCRResultSchema)
 export const LLMResponse = mongoose.models.LLMResponse || mongoose.model<ILLMResponseDocument>('LLMResponse', LLMResponseSchema)
-export const SystemLog = mongoose.models.SystemLog || mongoose.model<ISystemLog>('SystemLog', SystemLogSchema)
-export const CachedData = mongoose.models.CachedData || mongoose.model<ICachedData>('CachedData', CachedDataSchema)
-export const BackgroundJob = mongoose.models.BackgroundJob || mongoose.model<IBackgroundJob>('BackgroundJob', BackgroundJobSchema)
-export const UserSession = mongoose.models.UserSession || mongoose.model<IUserSession>('UserSession', UserSessionSchema)
+export const SystemLog = mongoose.models.SystemLog || mongoose.model<ISystemLogDocument>('SystemLog', SystemLogSchema)
+export const CachedData = mongoose.models.CachedData || mongoose.model<ICachedDataDocument>('CachedData', CachedDataSchema)
+export const BackgroundJob = mongoose.models.BackgroundJob || mongoose.model<IBackgroundJobDocument>('BackgroundJob', BackgroundJobSchema)
+export const UserSession = mongoose.models.UserSession || mongoose.model<IUserSessionDocument>('UserSession', UserSessionSchema)
